@@ -6,11 +6,11 @@ import { useAuth } from '@/lib/auth-context';
 import { useParams, useRouter } from 'next/navigation';
 
 const CATEGORIES = [
-  { key: 'exterior', label: 'Exterior', icon: '🚗' },
-  { key: 'engine', label: 'Engine Bay', icon: '🔧' },
-  { key: 'interior', label: 'Interior', icon: '💺' },
-  { key: 'safety', label: 'Safety Equipment', icon: '🛡️' },
-  { key: 'documentation', label: 'Documentation', icon: '📄' },
+  { key: 'Exterior', label: 'Exterior', icon: '🚗' },
+  { key: 'Engine', label: 'Engine Bay', icon: '🔧' },
+  { key: 'Interior', label: 'Interior', icon: '💺' },
+  { key: 'Safety', label: 'Safety Equipment', icon: '🛡️' },
+  { key: 'Documentation', label: 'Documentation', icon: '📄' },
 ];
 
 export default function InspectionFormPage() {
@@ -190,7 +190,7 @@ export default function InspectionFormPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
             <h3 className="font-bold text-lg mb-2">Submit Inspection?</h3>
-            <p className="text-sm text-gray-600 mb-4">This will send the inspection to your supervisor for review. You wonYou won'tapos;t be able to edit it after submission.</p>
+            <p className="text-sm text-gray-600 mb-4">This will send the inspection to your supervisor for review. You won&apos;t be able to edit it after submission.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowSubmitConfirm(false)} className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold">Cancel</button>
               <button onClick={() => { setShowSubmitConfirm(false); saveProgress('submit'); }} disabled={saving}
