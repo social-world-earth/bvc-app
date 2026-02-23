@@ -127,15 +127,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     // Create notifications for assigned inspectors
     const { data: assignedTasks, error: tasksQueryError } = await sb
       .from('audit_tasks')
-      .select('DISTINCT inspector_id')
+      .select('inspector_id')
       .eq('audit_schedule_id', params.id)
       .not('inspector_id', 'is', null);
 
     if (tasksQueryError) throw tasksQueryError;
 
-    const notificationsToInsert = (assignedTasks || []).map((task: any) => ({
+    // Deduplicate inspector IDs in JS since Supabase doesn't support DISTINCT in select
+    const uniqueInspectorIds = [...new Set((assignedTasks || []).map((t: any) => t.inspector_id))];
+
+    const notificationsToInsert = uniqueInspectorIds.map((inspectorId: string) => ({
       id: uuid(),
-      user_id: task.inspector_id,
+      user_id: inspectorId,
       notification_type: 'audit_assigned',
       title: 'New Audit Assigned',
       message: `You have been assigned vehicles for audit: ${schedule.title}`
