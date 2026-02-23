@@ -10,20 +10,34 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   try {
-    const sb = await getSupabase();
+    const sb = getSupabase();
+
+    // First get vehicle IDs that belong to this supervisor's branch
+    const { data: branchVehicles, error: vError } = await sb
+      .from('vehicles')
+      .select('id')
+      .eq('branch_id', user.branch_id);
+
+    if (vError) throw vError;
+    const vehicleIds = (branchVehicles || []).map((v: any) => v.id);
+
+    if (vehicleIds.length === 0) {
+      return NextResponse.json({ inspections: [] });
+    }
 
     const { data: inspections, error } = await sb
       .from('inspections')
       .select(`
         *,
-        vehicles(registration_number, chassis_number, make, model, ownership_type),
-        branches:vehicles(branches(name)),
-        partners:vehicles(partners(name)),
+        vehicles(registration_number, chassis_number, make, model, ownership_type, branch_id,
+          branches(name),
+          partners(name)
+        ),
         inspector:users!inspector_id(name),
-        audit_schedule:audit_tasks(audit_schedules(title))
+        audit_task:audit_tasks(audit_schedules(title))
       `)
       .in('status', ['submitted', 'approved', 'rejected'])
-      .eq('vehicles.branch_id', user.branch_id)
+      .in('vehicle_id', vehicleIds)
       .order('status', { ascending: true })
       .order('completed_at', { ascending: false });
 
@@ -37,15 +51,13 @@ export async function GET(req: NextRequest) {
       make: i.vehicles?.make,
       model: i.vehicles?.model,
       ownership_type: i.vehicles?.ownership_type,
-      branch_name: i.branches?.[0]?.branches?.name || null,
-      partner_name: i.partners?.[0]?.partners?.name || null,
+      branch_name: i.vehicles?.branches?.name || null,
+      partner_name: i.vehicles?.partners?.name || null,
       inspector_name: i.inspector?.name,
-      audit_title: i.audit_schedule?.[0]?.audit_schedules?.title || null,
+      audit_title: i.audit_task?.[0]?.audit_schedules?.title || null,
       vehicles: undefined,
-      branches: undefined,
-      partners: undefined,
       inspector: undefined,
-      audit_schedule: undefined
+      audit_task: undefined
     }));
 
     return NextResponse.json({ inspections: transformedInspections });
