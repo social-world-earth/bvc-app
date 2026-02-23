@@ -134,7 +134,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (tasksQueryError) throw tasksQueryError;
 
     // Deduplicate inspector IDs in JS since Supabase doesn't support DISTINCT in select
-    const uniqueInspectorIds = [...new Set((assignedTasks || []).map((t: any) => t.inspector_id))];
+    const uniqueInspectorIds = Array.from(new Set((assignedTasks || []).map((t: any) => t.inspector_id)));
 
     const notificationsToInsert = uniqueInspectorIds.map((inspectorId: string) => ({
       id: uuid(),
